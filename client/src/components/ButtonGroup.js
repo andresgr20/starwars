@@ -5,7 +5,7 @@ export default function ButtonGroup({ options, selectedOption, onSelect }) {
         <button
           key={index}
           className={`button ${selectedOption === option ? "active" : ""}`}
-          onClick={() => onSelect()}
+          onClick={() => onSelect(option)}
         >
           {option}
         </button>

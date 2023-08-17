@@ -1,30 +1,38 @@
 import React, { useEffect, useState } from "react";
+import Table from "./Table";
+
+const API_BASE_URL = "http://127.0.0.1:8000/api/";
 export default function Search() {
   const [inputValue, setInputValue] = useState("");
   const [responseData, setResponseData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  // Parse and clean data so it fits
-  // pass it to the back end and the parse and verify there too
-  const handleSubmit = async (event) => {
-    // event.preventDefault();
-    // try {
-    //   // hit endpoint
-    //   const query = await fetch("https://swapi.dev/api/people/");
-    //   const responseJSON = await query.json;
-    //   setResponseData(responseJSON);
-    //   setLoading(false);
-    // } catch (error) {
-    //   //
-    // }
-  };
+  const [loading, setLoading] = useState(false);
+  const [clicked, setClicked] = useState(false);
 
   useEffect(() => {
-    handleSubmit();
-  }, []);
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          API_BASE_URL + `search?page=${inputValue}`
+        );
+        const data = await response.json();
+        setResponseData(data);
+        setLoading(false);
+      } catch (error) {
+        console.log(error);
+        setLoading(false);
+      }
+    };
 
-  const searchResults = (data) => {
-    <div>{data.mesage}</div>;
+    fetchData();
+  }, [setResponseData]);
+
+  const searchResults = () => {
+    if (responseData.count == 0) {
+      return <p>No results found</p>;
+    }
+    return <Table data={data.result} />;
   };
+
   return (
     <div>
       <div>
@@ -38,7 +46,9 @@ export default function Search() {
           <button type="submit">Submit</button>
         </form>
       </div>
-      <div>{loading ? <p>Loading ...</p> : searchResults(responseData)}</div>
+      <div>
+        {clicked ? loading ? <p>Loading ...</p> : searchResults() : null}
+      </div>
     </div>
   );
 }

@@ -1,8 +1,10 @@
-import "./App.css";
+import "./styles/styles.css";
 import ButtonGroup from "./components/ButtonGroup";
 import Search from "./components/Search";
 import Table from "./components/Table";
 import { useEffect, useState } from "react";
+import TableFooter from "./components/TableFooter";
+import logo from "./logo.png";
 
 const API_BASE_URL = "http://127.0.0.1:8000/api/";
 
@@ -14,12 +16,22 @@ function App() {
   const [planets, setPlanets] = useState(null);
   const [starships, setStarships] = useState(null);
   const [page, setSelectedPage] = useState(1);
+
   useEffect(() => {
-    const fetchData = async (url, sette) => {
+    const fetchData = async (url, setter) => {
       try {
+        const cacheKey = `${url}?page=${page}`;
+
+        const cacheData = sessionStorage.getItem(cacheKey);
+        if (cacheData) {
+          setter(JSON.parse(cacheData));
+          setLoading(false);
+          return;
+        }
         const response = await fetch(url);
         const data = await response.json();
-        setter(data);
+
+        sessionStorage.setItem(cacheKey, JSON.stringify(data));
         setLoading(false);
       } catch (error) {
         console.log(error);
@@ -41,13 +53,13 @@ function App() {
   }, [selectedOption, setPeople, setPlanets, setStarships, page]);
 
   const handleOptionSelect = (option) => {
-    setSelectedOption(option);
     setLoading(true);
+    setSelectedOption(option);
   };
 
   const handlePageChange = (option) => {
-    setSelectedPage(option);
     setLoading(true);
+    setSelectedPage(option);
   };
 
   const dataMaps = {
@@ -60,7 +72,9 @@ function App() {
 
   return (
     <div className="App">
-      <div className="title">War of the Stars </div>
+      <div className="logo">
+        <img src={logo} alt="Logo" />
+      </div>
       <div>
         <div>
           <ButtonGroup
@@ -69,25 +83,21 @@ function App() {
             onSelect={handleOptionSelect}
           />
         </div>
-        <div>
-          {loading ? (
-            <p>Loading ... </p>
-          ) : (
-            <div>
-              <Table data={displayedData.result} selected={selectedOption} />
-              <TableFooter
-                range={displayedData.count}
-                page={page}
-                itemsPerPage={displayedData.itemsPerPage}
-                onSelect={handlePageChange}
-              />
-            </div>
-          )}
-        </div>
+        {loading ? (
+          <p className="text-response">Loading... </p>
+        ) : (
+          <div>
+            <Table data={displayedData.result} selected={selectedOption} />
+            <TableFooter
+              range={displayedData.count}
+              page={page}
+              itemsPerPage={displayedData.itemsPerPage}
+              onSelect={handlePageChange}
+            />
+          </div>
+        )}
       </div>
-      <div>
-        <Search />
-      </div>
+      <Search />
     </div>
   );
 }

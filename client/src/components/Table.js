@@ -1,7 +1,9 @@
+import "../styles/styles.css";
+
 export default function Table({ data }) {
   return (
-    <div>
-      <table>
+    <div className="container">
+      <table className="centered-table">
         <thead>
           <tr>
             <th>Name</th>

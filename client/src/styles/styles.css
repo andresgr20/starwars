@@ -100,9 +100,17 @@ body{
     color: #ffffff;
   }
 
+  .button-grouped.active:hover{
+    background-color: #ff9100; 
+  }
+
   .button-grouped.inactive {
-    background-color: #8E8E8E; 
+    background-color: #e8e8e8; 
     color: #ffffff;
+  }
+
+  .button-group.inactive:hover{
+    background-color: #d0d0d0;
   }
 
   .input-bar{

@@ -1,14 +1,21 @@
-import { useMemo } from "react";
-import ButtonGroup from "./ButtonGroup";
-
-export default function TableFooter({ range, page, itemsPerPage, onSelect }) {
-  const pages = useMemo(() => {
-    return Array.from(
-      { length: Math.ceil(range / itemsPerPage) },
-      (_, index) => index + 1
-    );
-  }, [range, itemsPerPage]);
+import "../styles/styles.css";
+export default function TableFooter({ prev, next, goToPage }) {
   return (
-    <ButtonGroup options={pages} selectedOption={page} onSelect={onSelect} />
+    <div className="navigation">
+      <button
+        onClick={() => goToPage(-1)}
+        disabled={!prev}
+        className={!prev ? "nav-button-disabled" : "nav-button"}
+      >
+        &lt;
+      </button>
+      <button
+        onClick={() => goToPage(1)}
+        disabled={!next}
+        className={!next ? "nav-button-disabled" : "nav-button"}
+      >
+        &gt;
+      </button>
+    </div>
   );
 }

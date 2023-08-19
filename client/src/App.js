@@ -1,74 +1,66 @@
 import "./styles/styles.css";
 import ButtonGroup from "./components/ButtonGroup";
 import Search from "./components/Search";
-import Table from "./components/Table";
 import { useEffect, useState } from "react";
-import TableFooter from "./components/TableFooter";
 import logo from "./logo.png";
-
-const API_BASE_URL = "http://127.0.0.1:8000/api/";
+import TableWithFooter from "./components/TableWithFooter";
+import { API_BASE_URL } from "./config";
 
 function App() {
   const options = ["People", "Planets", "Starships"];
   const [selectedOption, setSelectedOption] = useState(options[0]);
   const [loading, setLoading] = useState(true);
-  const [people, setPeople] = useState(null);
-  const [planets, setPlanets] = useState(null);
-  const [starships, setStarships] = useState(null);
+  const [data, setData] = useState(null);
   const [page, setSelectedPage] = useState(1);
 
   useEffect(() => {
-    const fetchData = async (url, setter) => {
+    const fetchData = async (url) => {
       try {
         const cacheKey = `${url}?page=${page}`;
-
         const cacheData = sessionStorage.getItem(cacheKey);
         if (cacheData) {
-          setter(JSON.parse(cacheData));
+          setData(JSON.parse(cacheData));
           setLoading(false);
           return;
         }
+        if (page > 1) {
+          url = url + "?page=" + page;
+        }
         const response = await fetch(url);
-        const data = await response.json();
-
-        sessionStorage.setItem(cacheKey, JSON.stringify(data));
-        setLoading(false);
+        const responseJSON = await response.json();
+        setData(responseJSON);
+        sessionStorage.setItem(cacheKey, JSON.stringify(responseJSON));
       } catch (error) {
         console.log(error);
+      } finally {
         setLoading(false);
       }
     };
 
     switch (selectedOption) {
       case "People":
-        fetchData(`${API_BASE_URL}get-people?page=${page}`, setPeople);
+        fetchData(`${API_BASE_URL}get-people`);
         break;
       case "Planets":
-        fetchData(`${API_BASE_URL}get-planets?page=${page}`, setPlanets);
+        fetchData(`${API_BASE_URL}get-planets`);
         break;
       default:
-        fetchData(`${API_BASE_URL}get-starships?page=${page}`, setStarships);
+        fetchData(`${API_BASE_URL}get-starships`);
         break;
     }
-  }, [selectedOption, setPeople, setPlanets, setStarships, page]);
+    return;
+  }, [selectedOption, page]);
 
   const handleOptionSelect = (option) => {
     setLoading(true);
+    setSelectedPage(1);
     setSelectedOption(option);
   };
 
   const handlePageChange = (option) => {
     setLoading(true);
-    setSelectedPage(option);
+    setSelectedPage(page + option);
   };
-
-  const dataMaps = {
-    People: people,
-    Planets: planets,
-    Starships: starships,
-  };
-
-  const displayedData = dataMaps[selectedOption];
 
   return (
     <div className="App">
@@ -86,15 +78,7 @@ function App() {
         {loading ? (
           <p className="text-response">Loading... </p>
         ) : (
-          <div>
-            <Table data={displayedData.result} selected={selectedOption} />
-            <TableFooter
-              range={displayedData.count}
-              page={page}
-              itemsPerPage={displayedData.itemsPerPage}
-              onSelect={handlePageChange}
-            />
-          </div>
+          <TableWithFooter data={data} onSelect={handlePageChange} />
         )}
       </div>
       <Search />

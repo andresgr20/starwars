@@ -1,31 +1,39 @@
 import React, { useEffect, useState } from "react";
-import Table from "./Table";
-import TableFooter from "./TableFooter";
 import "../styles/styles.css";
+import TableWithFooter from "./TableWithFooter";
+import { API_BASE_URL } from "../config";
 
-const API_BASE_URL = "http://127.0.0.1:8000/api/";
 export default function Search() {
   const [inputValue, setInputValue] = useState("");
   const [responseData, setResponseData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [buttonClicked, setButtonClicked] = useState(false);
   const [page, setSelectedPage] = useState(1);
+  const [previousSearch, setPreviousSearch] = useState("");
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (previousSearch !== inputValue) {
+      setSelectedPage(1);
+    }
     setButtonClicked(!buttonClicked);
   };
 
   const fetchData = async () => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}search-people/?search=${inputValue}&page=${page}`
+        `${API_BASE_URL}get-people/?search=${inputValue}&page=${page}`
       );
 
       if (!response.ok) {
         throw new Error("Failed to connect to server");
       }
       const data = await response.json();
-      setResponseData(data);
+      if (data.error) {
+        // Show the error to the frontend maybe?
+      } else {
+        setPreviousSearch(inputValue);
+        setResponseData(data);
+      }
     } catch (error) {
       console.log(error);
     } finally {
@@ -34,16 +42,16 @@ export default function Search() {
   };
   useEffect(() => {
     if (buttonClicked && inputValue !== "") {
-      setLoading(!loading);
+      setLoading(true);
       fetchData();
-      setLoading(!loading);
+      setLoading(false);
       setButtonClicked(!buttonClicked);
     }
   }, [buttonClicked, page, loading]);
 
   const handlePageChange = (option) => {
     setLoading(true);
-    setSelectedPage(option);
+    setSelectedPage(page + option);
     setButtonClicked(!buttonClicked);
   };
 
@@ -54,22 +62,10 @@ export default function Search() {
     if (!responseData) {
       return null;
     }
-    if (responseData.count == 0) {
+    if (responseData.result.length === 0) {
       return <p className="text-response">No results found</p>;
     }
-    return (
-      <div>
-        <Table data={responseData.result} />
-        {responseData.count > responseData.itemsPerPage && (
-          <TableFooter
-            range={responseData.count}
-            itemsPerPage={responseData.itemsPerPage}
-            onSelect={handlePageChange}
-            page={page}
-          />
-        )}
-      </div>
-    );
+    return <TableWithFooter data={responseData} onSelect={handlePageChange} />;
   };
 
   return (
@@ -84,7 +80,7 @@ export default function Search() {
             onChange={(e) => setInputValue(e.target.value)}
             className="search-bar"
           />
-          <button type="submit" className="submit-button">
+          <button type="submit" className="normal-button">
             Submit
           </button>
         </form>

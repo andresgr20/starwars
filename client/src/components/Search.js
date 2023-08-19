@@ -47,7 +47,7 @@ export default function Search() {
       setLoading(false);
       setButtonClicked(!buttonClicked);
     }
-  }, [buttonClicked, page, loading]);
+  }, [buttonClicked, page, loading, fetchData]);
 
   const handlePageChange = (option) => {
     setLoading(true);
